@@ -1,7 +1,6 @@
 import sqlite3
 import csv
 import os
-from time import sleep
 
 csv_file = 'data/linkedin_data.csv'
 delimiter =';'
