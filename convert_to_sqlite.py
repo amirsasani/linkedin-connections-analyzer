@@ -1,11 +1,12 @@
 import sqlite3
 import csv
+import helper
 import os
 
 csv_file = 'data/linkedin_data.csv'
 delimiter =';'
 
-db_file = 'data/linkedin_data.db'
+db_file = helper.getDatabaseFilePath()
 
 # Create a database file, if exists, replace it
 if os.path.exists(db_file):

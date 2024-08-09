@@ -2,10 +2,8 @@ from flask import Flask, request, render_template, redirect, url_for
 import sqlite3
 from random import randrange
 from LinkedinScraper import linkedin_login, fetch_user_location, fetch_user_profile_image
-from dotenv import load_dotenv
+import helper
 import os
-
-load_dotenv()
 
 app = Flask(__name__)
 
@@ -50,7 +48,7 @@ return "Element not found";
 """
     driver.execute_script(script)
     
-    with sqlite3.connect('linkedin_data.db') as conn:
+    with sqlite3.connect(helper.getDatabaseFilePath()) as conn:
         cursor = conn.cursor()
         cursor.execute('UPDATE linkedin_data SET ConnectionStatus = ? WHERE Id = ?', ("Unfollowed", id))
         conn.commit()
@@ -58,7 +56,7 @@ return "Element not found";
 
 @app.route('/keep/<id>', endpoint='keep')
 def keep(id):
-    with sqlite3.connect('linkedin_data.db') as conn:
+    with sqlite3.connect(helper.getDatabaseFilePath()) as conn:
         cursor = conn.cursor()
         cursor.execute(f'UPDATE linkedin_data SET ConnectionStatus = ? WHERE Id = ?', ('Keep', id))
         conn.commit()
@@ -81,7 +79,7 @@ def update_row(row):
         location = fetch_user_location(driver, url)
         image = fetch_user_profile_image(driver, url)
 
-        with sqlite3.connect('linkedin_data.db') as conn:
+        with sqlite3.connect(helper.getDatabaseFilePath()) as conn:
             cursor = conn.cursor()
             cursor.execute('''
                 UPDATE linkedin_data
@@ -99,7 +97,7 @@ def update_row(row):
         return False
 
 def get_data_single(page = 1, limit = 10):
-    with sqlite3.connect('linkedin_data.db') as conn:
+    with sqlite3.connect(helper.getDatabaseFilePath()) as conn:
         cursor = conn.cursor()
         query = (f'SELECT Id, ("FirstName" || " " || "LastName") AS FullName, URL, Company, Position, Location, Image '
                  f'FROM linkedin_data '
@@ -116,7 +114,7 @@ def get_data_single(page = 1, limit = 10):
 def read_data(page = 1, limit = 10):
     data = []
 
-    with sqlite3.connect('linkedin_data.db') as conn:
+    with sqlite3.connect(helper.getDatabaseFilePath()) as conn:
         cursor = conn.cursor()
         query = (f'SELECT Id, ("FirstName" || " " || "LastName") AS FullName, URL, Company, Position, Location, Image '
                  f'FROM linkedin_data '
@@ -131,7 +129,7 @@ def read_data(page = 1, limit = 10):
     return data
 
 def get_total_pages(limit = 10):
-    with sqlite3.connect('linkedin_data.db') as conn:
+    with sqlite3.connect(helper.getDatabaseFilePath()) as conn:
         cursor = conn.cursor()
         cursor.execute('SELECT COUNT(*) FROM linkedin_data WHERE ConnectionStatus NOT IN ("Keep", "Unfollowed")')
         total = cursor.fetchone()[0]
@@ -139,6 +137,6 @@ def get_total_pages(limit = 10):
     return total // limit
 
 if __name__ == "__main__":
-    driver = linkedin_login(os.getenv('USERNAME'), os.getenv('PASSWORD'))
+    driver = linkedin_login(helper.getUsername(), helper.getPassword())
 
     app.run(host='0.0.0.0', port=8000)
