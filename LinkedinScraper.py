@@ -59,7 +59,7 @@ def save_cookies(driver, cookies_file):
     with open(cookies_file, 'wb') as f:
         pickle.dump(cookies, f)
 
-def linkedin_login(email, password, sandbox=False, cookies_file="cookies.pkl"):
+def linkedin_login(email, password, sandbox=False, cookies_file="data/cookies.pkl"):
     # Set driver path
     driver_path = "./chromedriver"
 
