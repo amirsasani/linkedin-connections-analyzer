@@ -115,7 +115,7 @@
     <p>Company: {{ item[3] }}</p>
     <p>Position: {{ item[4] }}</p>
     <div class="actions">
-        <a href="{{ item[2] }}" target="_blank" class="open">Open</a>
+        <a href="{{ url_for('open', id=item[0]) }}" class="open">Open</a>
         <a href="{{ url_for('unfollow', id=item[0]) }}" class="unfollow">Unfollow</a>
         <a href="{{ url_for('keep', id=item[0]) }}" class="keep">Keep</a>
     </div>

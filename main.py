@@ -1,7 +1,7 @@
 from flask import Flask, request, render_template, redirect, url_for
 import sqlite3
 from random import randrange
-from LinkedinScraper import linkedin_login, fetch_user_location, fetch_user_profile_image
+from LinkedinScraper import linkedin_login, fetch_user_location, fetch_user_profile_image, check_and_navigate
 import helper
 import os
 
@@ -30,6 +30,16 @@ def index():
 
     return redirect(url_for('index', page=random_page))
     
+
+@app.route('/open/<id>', endpoint='open')
+def open(id):
+    data = get_row(id)
+    check_and_navigate(driver=driver, target_url=data[2])
+
+    return render_template('index.html', 
+                           item=data, 
+                           current_page=0,
+                           total_pages=0)
 
 @app.route('/unfollow/<id>', endpoint='unfollow')
 def unfollow(id):
@@ -107,6 +117,17 @@ def get_data_single(page = 1, limit = 10):
                  f'ORDER BY Location, Company, Position, Id '
                  f'LIMIT {limit} OFFSET {page * limit}')
         cursor.execute(query)
+        data = cursor.fetchone()
+
+    return data
+
+def get_row(id):
+    with sqlite3.connect(helper.getDatabaseFilePath()) as conn:
+        cursor = conn.cursor()
+        query = (f'SELECT Id, ("FirstName" || " " || "LastName") AS FullName, URL, Company, Position, Location, Image '
+                 f'FROM linkedin_data '
+                 f'WHERE Id = ?')
+        cursor.execute(query, (id,))
         data = cursor.fetchone()
 
     return data
