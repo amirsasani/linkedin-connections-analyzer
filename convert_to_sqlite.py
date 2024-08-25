@@ -1,10 +1,9 @@
 import sqlite3
 import csv
 import helper
-import os
 
 csv_file = 'data/linkedin_data.csv'
-delimiter =';'
+delimiter =','
 
 db_file = helper.getDatabaseFilePath()
 
@@ -13,11 +12,11 @@ cursor = db.cursor()
 
 # Create a table with Id(AI), First Name, Last Name, URL, Company, Position, Connection Status, Location, Image columns
 cursor.execute('''
-    CREATE TABLE linkedin_data(
+    CREATE TABLE IF NOT EXISTS linkedin_data (
         Id INTEGER PRIMARY KEY AUTOINCREMENT,
         FirstName TEXT,
         LastName TEXT,
-        URL TEXT,
+        URL TEXT UNIQUE,
         Company TEXT,
         Position TEXT,
         ConnectionStatus TEXT,
@@ -33,7 +32,7 @@ def process_row(row):
     url = row['URL']
     company = row['Company']
     position = row['Position']
-    connection_status = row['Connection Status']
+    connection_status = ""
     location = ""
     image = ""
 
@@ -43,10 +42,24 @@ def process_row(row):
     return (first_name, last_name, url, company, position, connection_status, location, image) 
 
 # Read CSV file and insert data into the table
+# Open the file for reading
 with open(csv_file, 'r', encoding='utf-8') as fin:
-    dr = csv.DictReader(fin, delimiter=delimiter)
+    header = None
+    
+    # Skip lines until you find the CSV header
+    for line in fin:
+        if "First Name,Last Name" in line:
+            header = line
+            break
+    
+    # Combine the header with the rest of the lines
+    if header:
+        remaining_lines = [header] + fin.readlines()
+        dr = csv.DictReader(remaining_lines, delimiter=delimiter)
 
     print("Fieldnames detected:", dr.fieldnames)
+
+    lines = 0
 
     for row in dr:
         try:
@@ -61,13 +74,25 @@ with open(csv_file, 'r', encoding='utf-8') as fin:
                         LastName = excluded.LastName,
                         Company = excluded.Company,
                         Position = excluded.Position,
-                        ConnectionStatus = excluded.ConnectionStatus,
-                        Location = excluded.Location,
-                        Image = excluded.Image;
+                        ConnectionStatus = CASE
+                            WHEN excluded.ConnectionStatus != '' THEN excluded.ConnectionStatus
+                            ELSE linkedin_data.ConnectionStatus
+                        END,
+                        Location = CASE
+                            WHEN excluded.Location != '' THEN excluded.Location
+                            ELSE linkedin_data.Location
+                        END,
+                        Image = CASE
+                            WHEN excluded.Image != '' THEN excluded.Image
+                            ELSE linkedin_data.Image
+                        END;
                 ''', data)
                 db.commit()
+                lines += 1
         except Exception as e:
             print(f"Error processing row {row}: {e}")
 
 # Close resources
 db.close()
+
+print(f"Processed {lines} rows")
