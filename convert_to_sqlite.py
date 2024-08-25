@@ -8,10 +8,6 @@ delimiter =';'
 
 db_file = helper.getDatabaseFilePath()
 
-# Create a database file, if exists, replace it
-if os.path.exists(db_file):
-    os.remove(db_file)
-
 db = sqlite3.connect(db_file)
 cursor = db.cursor()
 
@@ -59,7 +55,15 @@ with open(csv_file, 'r', encoding='utf-8') as fin:
                 cursor.execute('''
                     INSERT INTO linkedin_data(
                         FirstName, LastName, URL, Company, Position, ConnectionStatus, Location, Image
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT(URL) DO UPDATE SET
+                        FirstName = excluded.FirstName,
+                        LastName = excluded.LastName,
+                        Company = excluded.Company,
+                        Position = excluded.Position,
+                        ConnectionStatus = excluded.ConnectionStatus,
+                        Location = excluded.Location,
+                        Image = excluded.Image;
                 ''', data)
                 db.commit()
         except Exception as e:
