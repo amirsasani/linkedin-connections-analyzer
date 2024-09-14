@@ -12,7 +12,7 @@ def index():
     current_page = int(request.args.get('page', 1))
     total_pages = get_total_pages(1)
 
-    item = get_data_single(current_page, 1)
+    item = read_data(current_page, 1)
 
     item = update_row(list(item))
 
@@ -106,21 +106,6 @@ def update_row(row):
         print(f"Error processing row {row}: {e}")
         return False
 
-def get_data_single(page = 1, limit = 10):
-    with sqlite3.connect(helper.getDatabaseFilePath()) as conn:
-        cursor = conn.cursor()
-        query = (f'SELECT Id, ("FirstName" || " " || "LastName") AS FullName, URL, Company, Position, Location, Image '
-                 f'FROM linkedin_data '
-                 f'WHERE ConnectionStatus NOT IN ("Keep", "Unfollowed") '
-                 f'AND "FullName" != "" '
-                 f'AND URL != "" '
-                 f'ORDER BY Location, Company, Position, Id '
-                 f'LIMIT {limit} OFFSET {page * limit}')
-        cursor.execute(query)
-        data = cursor.fetchone()
-
-    return data
-
 def get_row(id):
     with sqlite3.connect(helper.getDatabaseFilePath()) as conn:
         cursor = conn.cursor()
@@ -133,7 +118,6 @@ def get_row(id):
     return data
 
 def read_data(page = 1, limit = 10):
-    data = []
 
     with sqlite3.connect(helper.getDatabaseFilePath()) as conn:
         cursor = conn.cursor()
@@ -144,8 +128,13 @@ def read_data(page = 1, limit = 10):
                  f'AND URL != "" '
                  f'ORDER BY Location, Company, Position, Id '
                  f'LIMIT {limit} OFFSET {page * limit}')
+
         cursor.execute(query)
-        data = cursor.fetchall()
+        
+        if(limit > 1):
+            data = cursor.fetchall()
+        else:
+            data = cursor.fetchone()
 
     return data
 
