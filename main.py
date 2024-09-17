@@ -14,7 +14,8 @@ def index():
 
     item = read_data(current_page, 1)
 
-    item = update_row(list(item))
+    if(item):
+        item = update_row(list(item))
 
     return render_template('index.html', 
                            item=item, 

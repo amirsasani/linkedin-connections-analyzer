@@ -108,22 +108,28 @@
 <body>
 
 <div class="card">
-    <img src="{{ item[6] }}" alt="{{ item[1] }}">
-    <h2>{{ item[1] }}</h2>
-    <p>{{ item[5] }}</p>
-    <p>ID: {{ item[0] }}</p>
-    <p>Company: {{ item[3] }}</p>
-    <p>Position: {{ item[4] }}</p>
-    <div class="actions">
-        <a href="{{ url_for('open', id=item[0]) }}" class="open">Open</a>
-        <a href="{{ url_for('unfollow', id=item[0]) }}" class="unfollow">Unfollow</a>
-        <a href="{{ url_for('keep', id=item[0]) }}" class="keep">Keep</a>
-    </div>
+    {% if not item %}
+        <h3>All Done!</h3>
+    {% else %}
+        <img src="{{ item[6] }}" alt="{{ item[1] }}">
+        <h2>{{ item[1] }}</h2>
+        <p>{{ item[5] }}</p>
+        <p>ID: {{ item[0] }}</p>
+        <p>Company: {{ item[3] }}</p>
+        <p>Position: {{ item[4] }}</p>
+        <div class="actions">
+            <a href="{{ url_for('open', id=item[0]) }}" class="open">Open</a>
+            <a href="{{ url_for('unfollow', id=item[0]) }}" class="unfollow">Unfollow</a>
+            <a href="{{ url_for('keep', id=item[0]) }}" class="keep">Keep</a>
+        </div>
+    {% endif %}
 </div>
 
-<ul class="pagination">
-    <li><a href="{{ url_for('random') }}" class="random">Random page ({{ total_pages }})</a></li>
-</ul>
+{% if item %}
+    <ul class="pagination">
+        <li><a href="{{ url_for('random') }}" class="random">Random page ({{ total_pages }})</a></li>
+    </ul>
+{% endif %}
 
 <script>
 // when the user hit o on the keyboard, click on a.open
