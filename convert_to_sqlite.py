@@ -3,7 +3,7 @@ import csv
 import helper
 
 csv_file = 'data/linkedin_data.csv'
-delimiter =','
+delimiter =';'
 
 db_file = helper.getDatabaseFilePath()
 
@@ -45,10 +45,11 @@ def process_row(row):
 # Open the file for reading
 with open(csv_file, 'r', encoding='utf-8') as fin:
     header = None
+    dr = None
     
     # Skip lines until you find the CSV header
     for line in fin:
-        if "First Name,Last Name" in line:
+        if f"First Name{delimiter}Last Name" in line:
             header = line
             break
     
